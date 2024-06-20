@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小王子採玫瑰</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f3eacb;
+            color: #333;
+            margin: 0;
+            display: flex;
+        }
+
+        #game {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+
+        #sidebar {
+            width: 250px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-section {
+            margin-bottom: 20px;
+        }
+
+        #items {
+            margin-top: 10px;
+        }
+
+        #main {
+            flex-grow: 1;
+            background-image: url('images/background.jpg');
+            background-size: cover;
+            position: relative;
+            cursor: pointer;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px 0;
+            border: none;
+            background: #ff6f61;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #ff3b2e;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .item-quantity {
+            margin-left: auto;
+            font-weight: bold;
+        }
+
+        .rose {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: url('images/rose.png') no-repeat center center;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+    <div id="game">
+        <div id="sidebar">
+            <h2>小王子採玫瑰</h2>
+            <div class="sidebar-section">
+                <div id="collect-button">
+                    <button id="collect-roses">收集玫瑰</button>
+                </div>
+                <div id="rose-counter">玫瑰數量: <span id="roses">0</span></div>
+                <div id="auto-rose-counter">每秒產生玫瑰數量: <span id="autoRosesPerSecond">0</span></div>
+            </div>
+            <div class="sidebar-section">
+                <h3>兌換物品</h3>
+                <div id="items">
+                    <div class="item">
+                        <span class="item-name">基礎自動採花機(每秒1*數量)&nbsp;&nbsp;</span>
+                        <span class="item-cost">價格:10玫瑰&nbsp;</span>
+                        <button class="exchange-button" data-cost="10">兌換</button>
+                        <span class="item-quantity" id="item1-quantity">0</span>
+                    </div>
+                    <div class="item">
+                        <span class="item-name">高級自動採花機(每秒2*數量)&nbsp;&nbsp;</span>
+                        <span class="item-cost">價格:20玫瑰&nbsp;</span>
+                        <button class="exchange-button" data-cost="20">兌換</button>
+                        <span class="item-quantity" id="item2-quantity">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="main"></div>
+    </div>
+    <script>
+        let roses = 0;
+        let item1Quantity = 0;
+        let item2Quantity = 0;
+        let autoRosesPerSecond = 0;
+
+        document.getElementById('main').addEventListener('click', (event) => {
+            addRose(event.clientX, event.clientY);
+        });
+
+        document.getElementById('collect-roses').addEventListener('click', () => {
+            collectRoses();
+        });
+
+        document.querySelectorAll('.exchange-button').forEach((button, index) => {
+            button.addEventListener('click', () => {
+                const cost = parseInt(button.getAttribute('data-cost'));
+                if (roses >= cost) {
+                    roses -= cost;
+                    document.getElementById('roses').innerText = roses;
+                    alert(`成功兌換物品 ${index + 1}`);
+                    if (index === 0) {
+                        item1Quantity++;
+                        document.getElementById('item1-quantity').innerText = item1Quantity;
+                    } else if (index === 1) {
+                        item2Quantity++;
+                        document.getElementById('item2-quantity').innerText = item2Quantity;
+                    }
+                } else {
+                    alert('玫瑰數量不足');
+                }
+            });
+        });
+
+        setInterval(() => {
+            roses += autoRosesPerSecond; // 增加每秒自動產生的玫瑰數量
+            autoRosesPerSecond = item2Quantity * 2 + item1Quantity * 1;
+            // 更新總玫瑰數量
+            document.getElementById('roses').innerText = roses;
+            // 更新每秒生成的玫瑰數量顯示
+            document.getElementById('autoRosesPerSecond').innerText = autoRosesPerSecond;
+
+        }, 1000); // 每秒執行一次
+
+        function addRose(x, y) {
+            const rose = document.createElement('div');
+            rose.className = 'rose';
+
+            // 計算玫瑰的精確位置
+            const mainRect = document.getElementById('main').getBoundingClientRect();
+            const offsetX = x - mainRect.left - 15; // 調整為圖片居中
+            const offsetY = y - mainRect.top - 15;
+
+            rose.style.left = `${offsetX}px`;
+            rose.style.top = `${offsetY}px`;
+
+            document.getElementById('main').appendChild(rose);
+        }
+
+        function collectRoses() {
+            roses += document.getElementsByClassName('rose').length;
+            document.getElementById('roses').innerText = roses;
+            document.querySelectorAll('.rose').forEach(rose => {
+                rose.remove();
+            });
+        }
+    </script>
+</body>
+</html>
